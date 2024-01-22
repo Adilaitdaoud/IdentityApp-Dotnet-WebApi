@@ -1,11 +1,14 @@
 using IdentityApp_WebApi.Data;
 using IdentityApp_WebApi.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,7 +43,25 @@ builder.Services.AddIdentityCore<User>(options =>
    .AddUserManager<UserManager<User>>()     //make use of User MAnager To create users
    .AddDefaultTokenProviders(); // be able to create token for email confirmation 
 
+// be able to authenticate users using JWT
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                // Validate the token bases on the key  me have provided inside appsetings.developpement.json JET:key
+                ValidateIssuerSigningKey = true,
+                // the issuer singing key based on JWT:Key
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:key"])),
+                // the issuer which in here is the api project url we are using
+                ValidIssuer = builder.Configuration["JWT:Issuer"],
+                //validate the Issuer (who ever is issuing the JWT)
+                ValidateIssuer = true,
+                //don't validate audiance (angular side)
+                ValidateAudience = false
 
+            };
+        });
 
 
 
@@ -54,7 +75,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+// adding UseAuthentication into our pipeline and this should come before UseAuthorisation 
+// Authentication verifies the identity of a user or services , and authorisation determines their access rights.
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
