@@ -44,7 +44,7 @@ namespace IdentityApp_WebApi.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterDto model)
+        public async Task<ActionResult> Register(RegisterDto model)
         {
             if(await CheckEmailExistsAsync(model.Email))
             {
@@ -59,9 +59,9 @@ namespace IdentityApp_WebApi.Controllers
                 EmailConfirmed = true
             };
             var result = await _userManager.CreateAsync(userToAdd, model.Password);
-            if (!result.Succeeded)
+            if (result.Succeeded !=true)
             {
-                return BadRequest(result.Errors);
+                return BadRequest(" your request is not Succeeded "+result.Errors);
             }
             return Ok("your account has been created, you can login ");
         }
