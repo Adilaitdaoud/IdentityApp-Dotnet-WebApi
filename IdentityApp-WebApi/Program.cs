@@ -1,5 +1,6 @@
 using IdentityApp_WebApi.Data;
 using IdentityApp_WebApi.Models;
+using IdentityApp_WebApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
@@ -24,7 +25,10 @@ builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-    // definging our IdentityCore Service
+// be able to inject JWTService class inside our controllers
+builder.Services.AddScoped<JWTService>();
+
+// definging our IdentityCore Service
 builder.Services.AddIdentityCore<User>(options =>
 {
     //password Configuration
