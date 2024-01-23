@@ -22,7 +22,7 @@ namespace IdentityApp_WebApi.Services
             _jwtKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:key"]));
         }
 
-        public string CreteJWT(User user)
+        public string CreateJWT(User user)
         {
             var userClaims = new List<Claim>
             {
