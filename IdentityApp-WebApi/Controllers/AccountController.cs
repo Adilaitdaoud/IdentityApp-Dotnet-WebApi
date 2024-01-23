@@ -73,7 +73,7 @@ namespace IdentityApp_WebApi.Controllers
             {
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                JWT = _jwtService.CreteJWT(user)
+                JWT = _jwtService.CreateJWT(user)
             };
         }
 
