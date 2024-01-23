@@ -34,10 +34,10 @@ builder.Services.AddIdentityCore<User>(options =>
     options.Password.RequireUppercase = false;
     options.Password.RequireNonAlphanumeric = false;
 
-    //for emailConfiguration
+    //for email Confirmation
     options.SignIn.RequireConfirmedEmail = true;
 }) .AddRoles<IdentityRole>()    // be able to add roles 
-   .AddRoles<RoleManager<IdentityRole>>()   // be able to make use of roleMangaer
+   .AddRoleManager<RoleManager<IdentityRole>>()   // be able to make use of roleMangaer
    .AddEntityFrameworkStores<AuthDbContext>()   // providing our dbContext 
    .AddSignInManager<SignInManager<User>>()     // make use Of Signin Manager
    .AddUserManager<UserManager<User>>()     //make use of User MAnager To create users
