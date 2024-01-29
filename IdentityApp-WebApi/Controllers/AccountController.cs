@@ -2,10 +2,12 @@
 using IdentityApp_WebApi.DTOs.Account;
 using IdentityApp_WebApi.Models;
 using IdentityApp_WebApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace IdentityApp_WebApi.Controllers
@@ -26,12 +28,22 @@ namespace IdentityApp_WebApi.Controllers
             _signInManager = signInManager;
             _userManager = userManager;
         }
+
+        [Authorize]
+        [HttpGet("refresh-user-token")]
+        public async Task<ActionResult<UserDto>> RefreshUserToken()
+        {
+            var user = await _userManager.FindByNameAsync(User.FindFirst(ClaimTypes.Email)?.Value);
+            return CreateApplicationUserDto(user);
+        }
+        
         [HttpPost("login")]
         public async Task<ActionResult<UserDto>> Login(LoginDto model)
         {
             var user = await _userManager.FindByNameAsync(model.UserName);
             if(user is null)
             {
+                
                 return Unauthorized("Invalid username or password ");
             }
             if (user.EmailConfirmed == false)
