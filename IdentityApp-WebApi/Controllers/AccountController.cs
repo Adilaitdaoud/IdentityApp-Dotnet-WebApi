@@ -5,10 +5,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace IdentityApp_WebApi.Controllers
@@ -89,13 +91,16 @@ namespace IdentityApp_WebApi.Controllers
                 {
                   return Ok(new JsonResult(new { title = "Account Created", message = "your account has been created, Please Confirm your email Adress" }));
                 }
+                return BadRequest("Faild to send email please contact the admin");
             }
             catch (Exception)
             {
                 return BadRequest("Faild to send email please contact the admin");
             }
-            return Ok();
+            
         }
+
+
 
         #region Private Helper Methods
         private UserDto CreateApplicationUserDto(User user)
@@ -115,7 +120,18 @@ namespace IdentityApp_WebApi.Controllers
 
         private async Task<bool> SendConfirmEmailAsync(User user)
         {
-            return  true;
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+            var url = $"{_config["JWT:ClientUrl"]}/{_config["Email:ConfirmationEmailPath"]}?token={token}&email={user.Email}";
+            var body = $"<p> Hello : {user.FirstName} {user.LastName}</p>"+
+                "<p> please Confirem your email by clicking on the following link  </p>"+
+                $"<p><a href=\"{url}\"> Click Here </a></p>"+
+                "<p>Tank You </p>"+
+                $"<br>{_config["Email:ApplicationName"]}";
+
+            var emailSend = new EmailSendDto(user.Email, "Confirm your Email", body);
+            return await _emailService.SendEmailAsync(emailSend);
+
         }
         #endregion
     }
