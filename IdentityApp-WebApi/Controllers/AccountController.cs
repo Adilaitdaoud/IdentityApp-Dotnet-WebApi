@@ -100,7 +100,35 @@ namespace IdentityApp_WebApi.Controllers
             
         }
 
+        [HttpPut("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail(ConfirmEmailDto model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if(user is null)
+            {
+                return Unauthorized("this email adress has been not registered yet ");
+            }
 
+            if (user.EmailConfirmed == true)
+            {
+                return BadRequest("your email adress was confirmed before ,Please Try Login To your account ");
+            }
+            try
+            {
+                var decodedTokenBytes = WebEncoders.Base64UrlDecode(model.Token);
+                var decodedToken =Encoding.UTF8.GetString(decodedTokenBytes);
+                var resault = await _userManager.ConfirmEmailAsync(user, decodedToken);
+                if (resault.Succeeded)
+                {
+                    return Ok(new JsonResult(new {title="EmailComfirmed",message="Your Email address is Confirmed .You Can Login"}));
+                }
+                return BadRequest("Invalid token,Please Try Again ");
+            }
+            catch(Exception){
+                return BadRequest("Invalid token,Please Try Again ");
+            }
+
+        }
 
         #region Private Helper Methods
         private UserDto CreateApplicationUserDto(User user)
