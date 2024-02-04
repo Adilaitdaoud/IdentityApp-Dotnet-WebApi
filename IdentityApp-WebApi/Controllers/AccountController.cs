@@ -1,5 +1,4 @@
-﻿using IdentityApp_WebApi.DTOs;
-using IdentityApp_WebApi.DTOs.Account;
+﻿using IdentityApp_WebApi.DTOs.Account;
 using IdentityApp_WebApi.Models;
 using IdentityApp_WebApi.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -7,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -19,14 +20,21 @@ namespace IdentityApp_WebApi.Controllers
         private readonly JWTService _jwtService;
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
+        private readonly EmailService _emailService;
+        private readonly IConfiguration _config;
 
         public AccountController(JWTService jwtService,
             SignInManager<User> signInManager,
-            UserManager<User> userManager)
+            UserManager<User> userManager,
+            EmailService emailService,
+            IConfiguration config)
+       
         {
             _jwtService = jwtService;
             _signInManager = signInManager;
             _userManager = userManager;
+            _emailService = emailService;
+            _config = config;
         }
 
         [Authorize]
@@ -68,14 +76,25 @@ namespace IdentityApp_WebApi.Controllers
                 LastName = model.LastName.ToLower(),
                 UserName = model.Email.ToLower(),
                 Email = model.Email.ToLower(),
-                EmailConfirmed = true
+               
             };
             var result = await _userManager.CreateAsync(userToAdd, model.Password);
             if (result.Succeeded !=true)
             {
                 return BadRequest(" your request is not Succeeded "+result.Errors);
             }
-            return Ok(new JsonResult(new { title = "Account Created", message = "your account has been created, you can login" }));
+            try
+            {
+                if(await SendConfirmEmailAsync(userToAdd))
+                {
+                  return Ok(new JsonResult(new { title = "Account Created", message = "your account has been created, Please Confirm your email Adress" }));
+                }
+            }
+            catch (Exception)
+            {
+                return BadRequest("Faild to send email please contact the admin");
+            }
+            return Ok();
         }
 
         #region Private Helper Methods
@@ -92,6 +111,11 @@ namespace IdentityApp_WebApi.Controllers
         private async Task<bool> CheckEmailExistsAsync(string email)
         {
             return await _userManager.Users.AnyAsync(x => x.Email == email.ToLower());
+        }
+
+        private async Task<bool> SendConfirmEmailAsync(User user)
+        {
+            return  true;
         }
         #endregion
     }
