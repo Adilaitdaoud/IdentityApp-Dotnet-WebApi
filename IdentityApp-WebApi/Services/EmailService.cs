@@ -15,7 +15,7 @@ namespace IdentityApp_WebApi.Services
             _config = config;
         }
 
-        async Task<bool> SendEmailAsync(EmailSendDto emailSend)
+       public  async Task<bool> SendEmailAsync(EmailSendDto emailSend)
         {
             MailjetClient client = new MailjetClient(_config["MailJet:ApiKey"], _config["MailJet:SecretKey"]);
             var email = new TransactionalEmailBuilder()
