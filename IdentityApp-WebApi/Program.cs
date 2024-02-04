@@ -27,8 +27,10 @@ builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-// be able to inject JWTService class inside our controllers
+// be able to inject JWTService and email Services class inside our controllers
 builder.Services.AddScoped<JWTService>();
+builder.Services.AddScoped<EmailService>();
+
 
 // definging our IdentityCore Service
 builder.Services.AddIdentityCore<User>(options =>
